@@ -44,7 +44,7 @@ pub const Node = opaque {
             self,
             c.pw_node_methods,
             "enum_params",
-            .{ seq, @enumToInt(id), index, num, @ptrCast(?*c.struct_spa_pod, filter) },
+            .{ seq, @intFromEnum(id), index, num, @ptrCast(filter) },
         );
     }
 
@@ -53,7 +53,7 @@ pub const Node = opaque {
             self,
             c.pw_node_methods,
             "set_param",
-            .{ id, flags, @ptrCast(?*const c.struct_spa_pod, pod) },
+            .{ id, flags, @ptrCast(pod) },
         );
     }
 };

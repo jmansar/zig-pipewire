@@ -18,7 +18,6 @@ const Global = struct {
     }
 };
 
-
 const RemoteData = struct {
     allocator: std.mem.Allocator,
     registry: *pw.Registry,
@@ -64,17 +63,17 @@ pub fn registryListener(data: *RemoteData, event: pw.Registry.Event) void {
             switch (e.typ) {
                 .Node => {
                     var node = g.proxy.downcast(pw.Node);
-                    var listener = node.addListener(data.allocator, Global, g, nodeListener);
+                    const listener = node.addListener(data.allocator, Global, g, nodeListener);
                     g.listener = listener;
                 },
                 .Device => {
                     var dev = g.proxy.downcast(pw.Device);
-                    var listener = dev.addListener(data.allocator, Global, g, deviceListener);
+                    const listener = dev.addListener(data.allocator, Global, g, deviceListener);
                     g.listener = listener;
                 },
                 .Metadata => {
                     var meta = g.proxy.downcast(pw.Metadata);
-                    var listener = meta.addListener(data.allocator, RemoteData, data, metadataListener);
+                    const listener = meta.addListener(data.allocator, RemoteData, data, metadataListener);
                     g.listener = listener;
                 },
                 else => unreachable,
@@ -162,7 +161,6 @@ pub fn metadataListener(data: *RemoteData, event: pw.Metadata.Event) void {
     }
 }
 
-
 pub fn main() anyerror!void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
@@ -222,7 +220,7 @@ pub fn main() anyerror!void {
         // const obj = device.params.items[0].body().Object;
         var it = obj.prop_iterator();
         while (it.next()) |curr| {
-            const key = @intToEnum(pw.spa.pod.RouteParam, curr.key);
+            const key: pw.spa.pod.RouteParam = @enumFromInt(curr.key);
             if (key == .index) {
                 route_index = curr.value.body().Int.*;
             } else if (key == .device) {
@@ -231,7 +229,7 @@ pub fn main() anyerror!void {
                 const obj2 = curr.value.body().Object;
                 var it2 = obj2.prop_iterator();
                 while (it2.next()) |curr_prop| {
-                    const key2 = @intToEnum(pw.spa.pod.SpaPropType, curr_prop.key);
+                    const key2: pw.spa.pod.SpaPropType = @intFromEnum(curr_prop.key);
                     if (key2 == .mute) {
                         mute = curr_prop.value.body().Bool.* == 1;
                     }
@@ -240,8 +238,6 @@ pub fn main() anyerror!void {
         }
 
         if (route_device == profile_device) break;
-
-
     }
 
     std.debug.print("default sink: {} {?s} {}\n", .{

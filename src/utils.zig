@@ -14,17 +14,15 @@ pub fn generateEventsStruct(version: u32, comptime EventsCType: type, comptime E
                 if (@typeInfo(union_field.field_type) == .Pointer) {
                     const fns = struct {
                         pub fn func(_data: ?*anyopaque, arg1: ?*anyopaque) callconv(.C) void {
-                            const ev = @unionInit(
-                                EventsUnion,
-                                union_field.name,
-                                @ptrCast(union_field.field_type, @alignCast(@alignOf(union_field.field_type), arg1)),
-                            );
+                            const unionInit: union_field.type.field_type = @ptrCast(@alignCast(arg1));
+                            const ev = @unionInit(EventsUnion, union_field.name, unionInit);
                             const D = struct { f: *const fn (data: *anyopaque, event: EventsUnion) void, d: *anyopaque };
-                            const listener = @ptrCast(*D, @alignCast(@alignOf(*D), _data));
+                            const listener: *D = @ptrCast(@alignCast(_data));
                             listener.f(listener.d, ev);
                         }
                     };
-                    @field(c_events, struct_field.name) = @ptrCast(struct_field.field_type, &fns.func);
+                    const field: struct_field.field_type = @ptrCast(&fns.func);
+                    @field(c_events, struct_field.name) = field;
                     continue :struct_fields_loop;
                 }
                 if (@typeInfo(union_field.field_type) == .Struct) {
@@ -36,23 +34,25 @@ pub fn generateEventsStruct(version: u32, comptime EventsCType: type, comptime E
                                     break :blk @field(union_field.field_type, "fromArgs")(args);
                                 } else {
                                     var r: union_field.field_type = undefined;
-                                    inline for (@typeInfo(union_field.field_type).Struct.fields) |f, i| {
+                                    inline for (@typeInfo(union_field.field_type).Struct.fields, 0..) |f, i| {
                                         const arg = args[i];
                                         comptime var ti = @typeInfo(f.field_type);
                                         if (ti == .Optional) {
                                             ti = @typeInfo(ti.Optional.child);
                                         }
                                         if (@Type(ti) == ([:0]const u8)) {
-                                            const ptr = @intToPtr([*:0]const u8, arg);
+                                            const ptr: [*:0]const u8 = @ptrFromInt(arg);
                                             if (@typeInfo(f.field_type) == .Optional and (arg == 0 or ptr[0] == 0)) {
                                                 @field(r, f.name) = null;
                                             } else {
                                                 @field(r, f.name) = std.mem.span(ptr);
                                             }
                                         } else if (ti == .Pointer) {
-                                            @field(r, f.name) = @intToPtr(f.field_type, arg);
+                                            const ptr: f.field_type = @ptrFromInt(arg);
+                                            @field(r, f.name) = ptr;
                                         } else if (ti == .Int) {
-                                            @field(r, f.name) = @intCast(f.field_type, arg);
+                                            const value: f.field_type = @intCast(arg);
+                                            @field(r, f.name) = value;
                                         } else {
                                             @compileLog(@Type(ti));
                                             unreachable;
@@ -67,11 +67,13 @@ pub fn generateEventsStruct(version: u32, comptime EventsCType: type, comptime E
                                 ev_data,
                             );
                             const D = struct { f: *const fn (data: *anyopaque, event: EventsUnion) void, d: *anyopaque };
-                            const listener = @ptrCast(*D, @alignCast(@alignOf(*D), _data));
+                            const listener: *D = @ptrCast(@alignCast(_data));
                             listener.f(listener.d, ev);
                         }
                     };
-                    @field(c_events, struct_field.name) = @ptrCast(struct_field.field_type, &fns.func);
+
+                    const ptr: struct_field.field_type = @ptrCast(&fns.func);
+                    @field(c_events, struct_field.name) = ptr;
                     continue :struct_fields_loop;
                 }
                 unreachable;
@@ -93,7 +95,7 @@ pub const Listener = struct {
         listener: *const anyopaque,
         data: *anyopaque,
     ) !*Self {
-        var self = try allocator.create(Self);
+        const self = try allocator.create(Self);
         self.* = .{
             .allocator = allocator,
             .spa_hook = std.mem.zeroes(c.struct_spa_hook),

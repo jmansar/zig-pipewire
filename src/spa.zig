@@ -9,7 +9,7 @@ fn SpaMethodReturnType(comptime methods_struct: type, comptime method_name: []co
     const T = @typeInfo(methods_struct).Struct;
     inline for (T.fields) |field| {
         if (comptime std.mem.eql(u8, method_name, field.name)) {
-            const t = @typeInfo(field.field_type).Optional.child;
+            const t = @typeInfo(field.type).Optional.child;
             const t2 = @typeInfo(t).Pointer.child;
             const t3 = @typeInfo(t2).Fn.return_type orelse unreachable;
             return t3;
@@ -23,15 +23,12 @@ pub fn spa_interface_call_method(
     comptime method_name: []const u8,
     args: anytype,
 ) SpaMethodReturnType(methods_struct, method_name) {
-    var interface = @ptrCast(
-        *c.spa_interface,
-        @alignCast(@alignOf(c.spa_interface), ptr),
+    const interface: *c.spa_interface = @ptrCast(
+        @alignCast(ptr),
     );
 
-    var funcs = @ptrCast(
-        *const methods_struct,
+    const funcs: *const methods_struct = @ptrCast(
         @alignCast(
-            @alignOf(methods_struct),
             (interface.cb).funcs,
         ),
     );
@@ -66,7 +63,7 @@ test {
         .type = "obj",
         .version = 0,
         .cb = .{
-            .funcs = @ptrCast(?*const anyopaque, &methods),
+            .funcs = @ptrCast(&methods),
             .data = null,
         },
     } } };
