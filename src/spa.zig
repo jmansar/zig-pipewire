@@ -34,7 +34,7 @@ pub fn spa_interface_call_method(
     );
 
     const f = @field(funcs, method_name) orelse unreachable;
-    return @call(.{}, f, .{interface.cb.data} ++ args);
+    return @call(.auto, f, .{interface.cb.data} ++ args);
 }
 
 test {

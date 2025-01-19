@@ -3,3 +3,4 @@ zig-out/
 src2/
 c/
 cimport.zig
+.zig-cache

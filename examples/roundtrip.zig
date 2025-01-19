@@ -135,13 +135,11 @@ pub fn nodeListener(data: *RemoteData, event: pw.Node.Event) void {
 pub fn metadataListener(data: *RemoteData, event: pw.Metadata.Event) void {
     const prop = event.property;
     if (prop.type != null and std.mem.eql(u8, prop.type.?, "Spa:String:JSON")) {
-        var parser = std.json.Parser.init(data.allocator, false);
-        defer parser.deinit();
-        var tree = parser.parse(prop.value) catch unreachable;
+        const tree = std.json.parseFromSlice(std.json.Value, data.allocator, prop.value, .{}) catch unreachable;
         defer tree.deinit();
 
         if (std.mem.eql(u8, prop.key, "default.audio.sink")) {
-            const default_sink = tree.root.Object.get("name").?.String;
+            const default_sink = tree.value.object.get("name").?.string;
 
             var it = data.globals.valueIterator();
             while (it.next()) |g| {

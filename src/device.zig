@@ -40,11 +40,12 @@ pub const Device = opaque {
     }
 
     pub fn enumParams(self: *Device, seq: c_int, id: pw.ParamInfo.ParamType, index: u32, num: u32, filter: ?*spa.SpaPod) isize {
+        const filterPtr: ?*c.struct_spa_pod = @ptrCast(filter);
         return spa.spa_interface_call_method(
             self,
             c.pw_device_methods,
             "enum_params",
-            .{ seq, @intFromEnum(id), index, num, @ptrCast(filter) },
+            .{ seq, @intFromEnum(id), index, num, filterPtr },
         );
     }
     pub fn setParam(self: *Device, id: u32, flags: u32, pod: *const spa.SpaPod) isize {

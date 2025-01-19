@@ -53,7 +53,7 @@ pub const Builder = struct {
         const Elem = std.meta.Elem(@TypeOf(slice));
 
         inline for (@typeInfo(ArrayBody.ArraySlice).Union.fields) |union_field| {
-            if (std.meta.Child(union_field.field_type) == Elem) {
+            if (std.meta.Child(union_field.type) == Elem) {
                 const child_spa_type: spa_type = @field(spa_type, union_field.name);
                 try self.push(child_spa_type);
                 self.parent().size = @sizeOf(Elem);

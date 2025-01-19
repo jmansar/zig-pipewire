@@ -13,10 +13,11 @@ pub const Registry = opaque {
         version: u32,
         props: *const spa.SpaDict,
         pub fn fromArgs(args_tuple: anytype) Global {
+            const typPtr: [*:0]const u8 = @ptrFromInt(args_tuple[2]);
             return Global{
                 .id = @intCast(args_tuple[0]),
                 .permissions = @intCast(args_tuple[1]),
-                .typ = ObjType.fromString(std.mem.span(@ptrFromInt(args_tuple[2]))),
+                .typ = ObjType.fromString(std.mem.span(typPtr)),
                 .version = @intCast(args_tuple[3]),
                 .props = @ptrFromInt(args_tuple[4]),
             };
