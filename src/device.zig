@@ -49,11 +49,12 @@ pub const Device = opaque {
         );
     }
     pub fn setParam(self: *Device, id: u32, flags: u32, pod: *const spa.SpaPod) isize {
+        const podPtr: ?*const c.struct_spa_pod = @ptrCast(pod);
         return spa.spa_interface_call_method(
             self,
             c.pw_device_methods,
             "set_param",
-            .{ id, flags, @ptrCast(pod) },
+            .{ id, flags, podPtr },
         );
     }
 

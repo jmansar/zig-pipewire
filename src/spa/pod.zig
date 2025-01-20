@@ -1,4 +1,5 @@
 const std = @import("std");
+const zigtrait = @import("zigtrait");
 const fileNS = @This();
 
 pub inline fn round_down_n(num: usize, algn: usize) usize {
@@ -117,7 +118,7 @@ pub const Builder = struct {
         try self.push(typ);
         switch (active_tag) {
             .String => {
-                if (comptime std.meta.trait.isSliceOf(.Int)(@TypeOf(args[0]))) {
+                if (comptime zigtrait.isSliceOf(.Int)(@TypeOf(args[0]))) {
                     try self.pushString(args[0]);
                 } else {
                     unreachable;
@@ -126,7 +127,7 @@ pub const Builder = struct {
             .Object => {
                 const fields = std.meta.fields(@TypeOf(args));
                 inline for (fields, 0..) |f, i| {
-                    if (comptime std.meta.trait.isTuple(f.field_type)) {
+                    if (comptime zigtrait.isTuple(f.type)) {
                         try self.pushProp(args[i][0]);
                         try @call(.{}, self.add, args[i][1]);
                     } else {
@@ -144,7 +145,7 @@ pub const Builder = struct {
             },
             .Array => {
                 const T = @TypeOf(args[0]);
-                if (comptime std.meta.trait.isIndexable(T) and !std.meta.trait.isTuple(T)) {
+                if (comptime zigtrait.isIndexable(T) and !zigtrait.isTuple(T)) {
                     try self.pushArray(args[0]);
                 } else {
                     unreachable;
