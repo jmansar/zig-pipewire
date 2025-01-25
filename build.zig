@@ -16,13 +16,6 @@ pub fn build(b: *std.Build) void {
 
     pipewire.linkSystemLibrary("libpipewire-0.3", .{});
 
-    const zigtrait = b.dependency("zigtrait", .{
-        .target = target,
-        .optimize = optimize,
-    });
-
-    pipewire.addImport("zigtrait", zigtrait.module("zigtrait"));
-
     // const exe = b.addExecutable("zig-pw", "examples/roundtrip.zig");
     // exe.setTarget(target);
     // exe.setBuildMode(mode);

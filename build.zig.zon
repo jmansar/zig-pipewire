@@ -8,10 +8,4 @@
         "README.md",
         "LICENSE",
     },
-    .dependencies = .{
-        .zigtrait = .{
-            .url = "https://github.com/wrongnull/zigtrait/archive/876b92368e7594de7163c0b39a8d8357cff3bf22.tar.gz",
-            .hash = "1220194af107ad954a832d0eacaae8fb9dafa8a1dc145a36ce7694fb5add7a0fcf0c",
-        },
-    },
 }

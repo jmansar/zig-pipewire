@@ -1,5 +1,4 @@
 const std = @import("std");
-const zigtrait = @import("zigtrait");
 const fileNS = @This();
 
 pub inline fn round_down_n(num: usize, algn: usize) usize {
@@ -50,7 +49,6 @@ pub const Builder = struct {
         self.updateParentSize();
     }
     pub fn pushArray(self: *Builder, slice: anytype) !void {
-        std.debug.assert(std.meta.trait.isIndexable(@TypeOf(slice)));
         const Elem = std.meta.Elem(@TypeOf(slice));
 
         inline for (@typeInfo(ArrayBody.ArraySlice).Union.fields) |union_field| {
@@ -118,8 +116,10 @@ pub const Builder = struct {
         try self.push(typ);
         switch (active_tag) {
             .String => {
-                if (comptime zigtrait.isSliceOf(.Int)(@TypeOf(args[0]))) {
-                    try self.pushString(args[0]);
+                const typeInfo = @typeInfo(@TypeOf(args[0]));
+                if (typeInfo == .Pointer and typeInfo.Pointer.size == .Slice and typeInfo.Pointer.child == @TypeOf(u8) and typeInfo.Pointer.is_const == true) {
+                    const value: []const u8 = args[0];
+                    try self.pushString(value);
                 } else {
                     unreachable;
                 }
@@ -127,9 +127,9 @@ pub const Builder = struct {
             .Object => {
                 const fields = std.meta.fields(@TypeOf(args));
                 inline for (fields, 0..) |f, i| {
-                    if (comptime zigtrait.isTuple(f.type)) {
+                    if (@typeInfo(f.type) == .Struct and @typeInfo(f.type).Struct.is_tuple == true) {
                         try self.pushProp(args[i][0]);
-                        try @call(.{}, self.add, args[i][1]);
+                        try @call(.auto, Builder.add, .{self} ++ args[i][1]);
                     } else {
                         unreachable;
                     }
@@ -144,8 +144,8 @@ pub const Builder = struct {
                 }
             },
             .Array => {
-                const T = @TypeOf(args[0]);
-                if (comptime zigtrait.isIndexable(T) and !zigtrait.isTuple(T)) {
+                const typeInfo = @typeInfo(@TypeOf(args[0]));
+                if (typeInfo == .Pointer and (typeInfo.Pointer.size != .One or typeInfo.Pointer.child == .Array)) {
                     try self.pushArray(args[0]);
                 } else {
                     unreachable;
