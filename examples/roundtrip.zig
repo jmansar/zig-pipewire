@@ -135,7 +135,11 @@ pub fn nodeListener(data: *RemoteData, event: pw.Node.Event) void {
 pub fn metadataListener(data: *RemoteData, event: pw.Metadata.Event) void {
     const prop = event.property;
     if (prop.type != null and std.mem.eql(u8, prop.type.?, "Spa:String:JSON")) {
-        const tree = std.json.parseFromSlice(std.json.Value, data.allocator, prop.value, .{}) catch unreachable;
+        const tree = std.json.parseFromSlice(std.json.Value, data.allocator, prop.value, .{}) catch {
+            std.log.debug("Property of type Spa:String:JSON cannot be passed as JSON: {s}\n\n", .{prop.value});
+            return;
+        };
+
         defer tree.deinit();
 
         if (std.mem.eql(u8, prop.key, "default.audio.sink")) {
