@@ -5,6 +5,7 @@ pub const c = @cImport({
     @cInclude("pipewire/extensions/profiler.h");
     @cInclude("pipewire/extensions/protocol-native.h");
     @cInclude("pipewire/extensions/session-manager.h");
+    @cInclude("pipewire/extensions/security-context.h");
 });
 
 pub const Context = @import("context.zig").Context;

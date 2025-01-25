@@ -90,6 +90,7 @@ pub const ObjType = enum {
     Profiler,
     Registry,
     Session,
+    SecurityContext,
 
     Other,
 
@@ -120,6 +121,7 @@ pub const ObjType = enum {
             if (comptime std.mem.eql(u8, f.name, "Other")) {
                 break;
             }
+
             if (@intFromEnum(self) == f.value) {
                 const v = comptime blk: {
                     var result: []const u8 = "PW_VERSION";
